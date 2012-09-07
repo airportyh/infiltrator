@@ -1,0 +1,7 @@
+Todos
+=====
+
+* handle binary data (images, etc)
+* handle query parameters: how to save them as file names?
+* handle request delays
+* use yaml front matter to configure?

@@ -1,0 +1,22 @@
+{
+  "name": "infiltrator",
+  "version": "0.0.0",
+  "description": "A debugging proxy that lets you easily edit any request and introduce delays",
+  "main": "server.js",
+  "dependencies": {
+    "mkdirp": "~0.3.4",
+    "request": "~2.11.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": "",
+  "keywords": [
+    "debugging",
+    "proxy"
+  ],
+  "author": "Toby Ho",
+  "license": "MIT"
+}
