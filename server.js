@@ -1,6 +1,7 @@
 var request = require('request')
 var mkdirp = require('mkdirp')
 var http = require('http')
+var https = require('https')
 var fs = require('fs')
 var path = require('path')
 
@@ -11,7 +12,11 @@ function filePathForReq(req){
     var method = req.method
     var url = req.url
     var uri = url.match(/^http\:\/\/[^\/]+(\/[^?]*)/)[1]
-    return path.join(baseDir, host, uri)
+    var pathname = path.join(baseDir, host, uri)
+    if (pathIsDir(pathname)){
+        pathname += 'index.html'
+    }
+    return pathname
 }
 
 function pathIsDir(pathname){
@@ -23,10 +28,8 @@ function proxyRequest(req, resp){
     var proxyReq = request({
         url: req.url
     }, function(err, mesg, body){
+        debugger
         var pathname = filePathForReq(req)
-        if (pathIsDir(pathname)){
-            pathname += 'index.html'
-        }
         var dir = path.dirname(pathname)
         mkdirp(dir, function(err){
             if (err){
@@ -45,9 +48,7 @@ function proxyRequest(req, resp){
 
 function serveFromFs(req, resp){
     var pathname = filePathForReq(req)
-    if (pathIsDir(pathname)){
-        pathname += 'index.html'
-    }
+    
     console.log(req.method + ' ' + req.url + ' [fs]')
     fs.readFile(pathname, function(err, data){
         if (err){
@@ -58,17 +59,28 @@ function serveFromFs(req, resp){
     })
 }
 
-http.createServer(function (req, resp) {
+function isEditable(req){
+
+}
+
+function server(req, resp) {
     var pathname = filePathForReq(req)
-    fs.stat(pathname, function(err, stat){
-        if (err){
-            proxyRequest(req, resp)
-            return
-        }else{
-            serveFromFs(req, resp)
-        }
-    })
-    //req.pipe(proxyReq).pipe(resp)
-}).listen(8081)
+    var ext = path.extname(pathname)
+    if (['.js', '.html', '.css'].indexOf(ext) !== -1){
+        fs.stat(pathname, function(err, stat){
+            if (err){
+                proxyRequest(req, resp)
+            }else{
+                serveFromFs(req, resp)
+            }
+        })
+    }else{
+        req.pipe(request(req.url)).pipe(resp)
+    }
+}
+
+http.createServer(server).listen(8081)
+https.createServer(server).listen(8081)
+
 
 console.log('Server listening on 8081')
